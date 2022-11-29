@@ -1,0 +1,27 @@
+<launch>
+        <arg name="port" default="0" />
+        <arg name="hardware" default="false" />
+
+        <param name="is_hardware" type="bool" value="$(arg hardware)" />
+
+        <!-- Set which port number  joy_node will use -->
+        <param name="joy_node/dev" value="/dev/input/js$(arg port)" />
+
+        <!-- Start Joystick node to be able to receive commands from the xbox controller -->
+        <!-- publishes to /joy -->
+        <node pkg="joy" name="joy_node" type="joy_node" required="true"/> 
+
+        <group if="$(arg hardware)">
+                <!-- Launch angle estimator and PID control -->
+                <include file="$(find bellows_arm)/launch/arm_ik_control.launch"/>
+        </group>
+
+        <!-- Visualization Nodes-->
+        <node name="rviz" pkg="rviz" type="rviz" required="true" output="screen"/>
+        <node name="goal_viz" pkg="bellows_ik" type="goal_viz.py" output='screen' />
+
+        <!-- IK nodes -->
+        <node name="goal_controller" pkg="bellows_ik" type="goal_controller.py"  output="screen"/>
+        <node name="goal_configuration" pkg="bellows_ik" type="goal_configuration.py"  output="screen"/>
+
+</launch>

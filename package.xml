@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bellows_ik</name>
+  <version>1.0.0</version>
+  <description>Package to control new bellows arm with IK</description>
+
+  <maintainer email="daniel.cheney01@gmail.com">Daniel Cheney</maintainer>
+
+  <license>BSD</license>
+
+  <url type="repository">https://bitbucket.org/byu_rad_lab/daniel_sandbox/bellows_ik/src/master/</url>
+
+  <author email="daniel.cheney01@gmail.com">Daniel Cheney</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>bellows_arm</depend>
+  <depend>rospy</depend>
+  <depend>joy</depend>
+
+</package>
