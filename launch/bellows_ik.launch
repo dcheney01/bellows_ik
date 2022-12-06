@@ -1,6 +1,6 @@
 <launch>
         <arg name="port" default="0" />
-        <arg name="hardware" default="false" />
+        <arg name="hardware" default="true" />
 
         <param name="is_hardware" type="bool" value="$(arg hardware)" />
 

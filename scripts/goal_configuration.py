@@ -21,9 +21,7 @@ class GoalConfigurationIK():
         self.isHardware = rospy.get_param("/is_hardware")
 
         self.goal_position = np.array([0.0]*3)
-
         self.curr_config = [np.array([0.0,0.0])]*3
-
         self.robot_kine = kinb.Kinematics()
 
         if self.isHardware:
@@ -52,7 +50,6 @@ class GoalConfigurationIK():
             if np.linalg.norm(self.robot_kine.get_relative_transform("JOINT0_BOTTOM", "JOINT2_TOP")[:3, -1] - \
                         self.goal_position) > 0.01:
                 goal_config = self.ik(self.curr_config, self.goal_position) # qf from ik
-                # print(goal_config, self.curr_config)
                 if self.isHardware:
                     self.joint0_cmd_pub.publish(JointState(position=goal_config[0:2]))
                     self.joint1_cmd_pub.publish(JointState(position=goal_config[2:4]))
@@ -88,6 +85,8 @@ class GoalConfigurationIK():
 
 
     def ik(self, curr_pose, goal_position):
+        # The if statement is because robot.ik_position updates the model that this class has of the bellows arm
+            # We only want to update the current position from the VR trackers for hardware so we need to make a copy
         if self.isHardware:
             temp_robot = deepcopy(self.robot_kine)
             qf, error_f, iter, reached_max_iter, status_msg = temp_robot.ik_position(np.array(goal_position), 
@@ -96,16 +95,20 @@ class GoalConfigurationIK():
                                                                                 curr_pose[2],
                                                                                 method='J_T', 
                                                                                 K = np.eye(3),
-                                                                                max_iter = 100)
+                                                                                max_iter = 500)
         else:
-            self.robot_kine.update_fk(*curr_pose)
+            # self.robot_kine.update_fk(*curr_pose)
             qf, error_f, iter, reached_max_iter, status_msg = self.robot_kine.ik_position(np.array(goal_position), 
                                                                                         curr_pose[0],
                                                                                         curr_pose[1],
                                                                                         curr_pose[2],
                                                                                         method='J_T', 
                                                                                         K = np.eye(3),
-                                                                                        max_iter = 100)
+                                                                                        max_iter = 500)
+
+            # self.robot_kine.update_fk(qf[0:2],
+            #                           qf[2:4],
+            #                           qf[4:6])
         # print(qf, error_f, iter, reached_max_iter, status_msg)
         return qf
         

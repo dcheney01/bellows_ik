@@ -20,23 +20,22 @@ class GoalController():
     def setup(self, control_rate=200.0):
 
         if rospy.get_param("/is_hardware"):
+            # Get the initial configuration of the joints
             curr_config = [rospy.wait_for_message('/robo_0/joint_0/angle_state', JointState, timeout=5).position,
                            rospy.wait_for_message('/robo_0/joint_1/angle_state', JointState, timeout=5).position,
                            rospy.wait_for_message('/robo_0/joint_2/angle_state', JointState, timeout=5).position]
+            self.robot_kine = kinb.Kinematics()
+            self.robot_kine.update_fk(*curr_config)
+            self.curr_state = self.robot_kine.get_relative_transform("JOINT0_BOTTOM", "JOINT2_TOP")[:3, -1]
         else:
-            curr_config = [np.array([0.0,0.0])]*3
+            msg = rospy.wait_for_message('/current_position', Point, timeout=5)
+            self.curr_state = [msg.x, msg.y, msg.z]
         
-        self.robot_kine = kinb.Kinematics()
-        self.robot_kine.update_fk(*curr_config)
-        self.curr_state = self.robot_kine.get_relative_transform("JOINT0_BOTTOM", "JOINT2_TOP")[:3, -1]
-        # self.curr_state = [0.0, 0.0, 0.0]
-
         # [lj_hor, lj_vert, rj_hor, rj_vert, l_trig, r_trig]
         self.joy_cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # commands coming directly controller [lj_hor, lj_vert, rj_hor, rj_vert]
 
         self.goal_pub = rospy.Publisher("/goal_position", Point, queue_size=10)
 
-        self.curr_state_sub = rospy.Subscriber("/visualization_marker", Marker, self.curr_state_cb, queue_size=5)
         self.joy_sub = rospy.Subscriber("/joy", Joy, self.joy_cmd_cb)
 
         self._control_rate = rospy.Rate(control_rate)
@@ -55,15 +54,9 @@ class GoalController():
             self.goal_pub.publish(goal_msg)
             self._control_rate.sleep()
 
-    def curr_state_cb(self, msg):
-        if msg.id == 0:
-            self.curr_state = [msg.pose.position.x, 
-                               msg.pose.position.y, 
-                               msg.pose.position.z]
-
     def joy_cmd_cb(self, msg):
         # [lj_hor, lj_vert, rj_hor, rj_vert, l_trig, r_trig]
-        self.joy_cmd = [-msg.axes[0],
+        self.joy_cmd = [ msg.axes[0],
                          msg.axes[1],
                          msg.axes[3],
                          msg.axes[4],
@@ -74,22 +67,27 @@ class GoalController():
         """
         This functions converts current state and joystick commands to a new goal position
         """
-        cartesian_speed = 0.01 # Speed of change in position
+        cartesian_speed = 0.001 # Speed of change in position
         # This controls x, y and z pose
-        goal = [state[0] + cartesian_speed*cmd[0], # x/y position is controlled by left joystick
-                state[1] + cartesian_speed*cmd[1],
-                state[2] + 0.5*cartesian_speed*((cmd[4] - cmd[5]))] # z position is controlled by left/right triggers 
+        goal = [state[0] + cartesian_speed*cmd[1], # x position is controlled by left joystick horizontally
+                state[1] + cartesian_speed*(cmd[0] + cmd[2]), # y position is controlled by left joystick vertically + right joystick horizontally
+                state[2] + 0.5*cartesian_speed*cmd[3]] # z position is controlled by left joystick vertically 
 
         self.curr_state = self.check_workspace(goal)
 
     def check_workspace(self, goal):
-        # make sure that the goal position is in the workspace. If it's not, move it into the workspace
-        goal[0] = goal[0] if np.abs(goal[0]) < 0.9 else np.sign(goal[0])*0.9
-        goal[1] = goal[1] if np.abs(goal[1]) < 0.9 else np.sign(goal[1])*0.9
+        # make sure that the goal position is in the workspace. If it's not, move it back into the workspace
+        # X limits
+        goal[0] = goal[0] if np.abs(goal[0]) < 1 else np.sign(goal[0])
+
+        # Y limits
+        goal[1] = goal[1] if np.abs(goal[1]) < 1 else np.sign(goal[1])
+
+        # Z limits
         if goal[2] < 0.1:
             goal[2] = 0.1
-        elif goal[2] > 0.9:
-            goal[2] = 0.9
+        elif goal[2] > 1:
+            goal[2] = 1
         return goal
 
 

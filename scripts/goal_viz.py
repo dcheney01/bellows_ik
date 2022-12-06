@@ -15,10 +15,10 @@ workspace.id = 1
 
 workspace.header.frame_id = "map"
 
-# Set the scale of the marker
-workspace.scale.x = 2
-workspace.scale.y = 2
-workspace.scale.z = 1
+# Set the scale of the workspace
+workspace.scale.x = 1.75
+workspace.scale.y = 1.75
+workspace.scale.z = 1.0
 
 # Set the color
 workspace.color.r = 1.0
@@ -49,9 +49,9 @@ def my_marker(id, color=[1,0]):
 
     # Set the scale of the marker
     scale = 1
-    marker.scale.x = .15 * scale
-    marker.scale.y = .15 * scale
-    marker.scale.z = .15 * scale
+    marker.scale.x = .05 * scale
+    marker.scale.y = .05 * scale
+    marker.scale.z = .05 * scale
 
     # Set the color
     marker.color.r = color[0]
@@ -92,6 +92,10 @@ def start():
     marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size=5)
     rospy.Subscriber("/goal_position", Point, update_marker_cb)
     rospy.Subscriber("/current_position", Point, update_current_position_cb)
+
+    # marker id 2 is the current position cube
+    # marker id 1 is workspace id
+    # marker id 0 is the goal position cube
 
 
 if __name__ == '__main__':
