@@ -46,7 +46,6 @@ class GoalConfigurationIK():
 
         while not rospy.is_shutdown():
             # Only perform ik if we have a certain amount of error in position
-
             if np.linalg.norm(self.robot_kine.get_relative_transform("JOINT0_BOTTOM", "JOINT2_TOP")[:3, -1] - \
                         self.goal_position) > 0.01:
                 goal_config = self.ik(self.curr_config, self.goal_position) # qf from ik

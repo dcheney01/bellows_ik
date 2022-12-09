@@ -2,19 +2,17 @@
         <arg name="port" default="0" />
         <arg name="hardware" default="true" />
 
+        <!-- Used to know if we actually want to send commands to the hardware -->
         <param name="is_hardware" type="bool" value="$(arg hardware)" />
 
         <!-- Set which port number  joy_node will use -->
         <param name="joy_node/dev" value="/dev/input/js$(arg port)" />
 
         <!-- Start Joystick node to be able to receive commands from the xbox controller -->
-        <!-- publishes to /joy -->
         <node pkg="joy" name="joy_node" type="joy_node" required="true"/> 
 
-        <group if="$(arg hardware)">
-                <!-- Launch angle estimator and PID control -->
-                <include file="$(find bellows_arm)/launch/arm_ik_control.launch"/>
-        </group>
+        <!-- Launches joint angle estimation and PID controller -->
+        <include file="$(find bellows_arm)/launch/arm_ik_control.launch"/>
 
         <!-- Visualization Nodes-->
         <node name="rviz" pkg="rviz" type="rviz" required="true" output="screen"/>

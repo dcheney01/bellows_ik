@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Point
-from visualization_msgs.msg import Marker
 from sensor_msgs.msg import Joy
 import numpy as np
 from sensor_msgs.msg import JointState
@@ -32,7 +31,7 @@ class GoalController():
             self.curr_state = [msg.x, msg.y, msg.z]
         
         # [lj_hor, lj_vert, rj_hor, rj_vert, l_trig, r_trig]
-        self.joy_cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # commands coming directly controller [lj_hor, lj_vert, rj_hor, rj_vert]
+        self.joy_cmd = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # commands coming directly from the xbox controller
 
         self.goal_pub = rospy.Publisher("/goal_position", Point, queue_size=10)
 
@@ -56,12 +55,12 @@ class GoalController():
 
     def joy_cmd_cb(self, msg):
         # [lj_hor, lj_vert, rj_hor, rj_vert, l_trig, r_trig]
-        self.joy_cmd = [ msg.axes[0],
-                         msg.axes[1],
-                         msg.axes[3],
-                         msg.axes[4],
-                         0 if msg.axes[2] == 1 else msg.axes[2], # left/right triggers start at 1 and go to -1
-                         0 if msg.axes[5] == 1 else msg.axes[5]]
+        self.joy_cmd = [msg.axes[0],
+                        msg.axes[1],
+                        msg.axes[3],
+                        msg.axes[4],
+                        0 if msg.axes[2] == 1 else msg.axes[2], # left/right triggers start at 1 and go to -1
+                        0 if msg.axes[5] == 1 else msg.axes[5]]
  
     def xbox_to_pose(self, state, cmd):
         """
