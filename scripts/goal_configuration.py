@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
 import rospy
-from arm_kinematics import kinematics as kinb
+from arm_kinematics import kinematics as kinb # RaD Lab Package
 import numpy as np
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import JointState
 from copy import deepcopy
-
-# Author: Andrew Clawson
 
 """
 This file subscribes to /goal_position and /current_position to publish /goal_configuration
@@ -95,7 +93,7 @@ class GoalConfigurationIK():
                                                                                 method='J_T', 
                                                                                 K = np.eye(3),
                                                                                 max_iter = 500)
-        else:
+        else: # running on simulation so we can update our model directly
             # self.robot_kine.update_fk(*curr_pose)
             qf, error_f, iter, reached_max_iter, status_msg = self.robot_kine.ik_position(np.array(goal_position), 
                                                                                         curr_pose[0],
@@ -105,9 +103,6 @@ class GoalConfigurationIK():
                                                                                         K = np.eye(3),
                                                                                         max_iter = 500)
 
-            # self.robot_kine.update_fk(qf[0:2],
-            #                           qf[2:4],
-            #                           qf[4:6])
         # print(qf, error_f, iter, reached_max_iter, status_msg)
         return qf
         

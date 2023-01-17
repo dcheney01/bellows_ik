@@ -8,7 +8,6 @@ from geometry_msgs.msg import Point
 This file allows to display a point in RVIZ that is controlled by an xbox controller
 """
 
-
 # Create a "ghost" where the general workspace of the robot is
 global workspace
 workspace = Marker()

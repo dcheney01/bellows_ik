@@ -4,7 +4,7 @@ from geometry_msgs.msg import Point
 from sensor_msgs.msg import Joy
 import numpy as np
 from sensor_msgs.msg import JointState
-from arm_kinematics import kinematics as kinb
+from arm_kinematics import kinematics as kinb # RaD Lab package
 
 
 # Author: Daniel Cheney
