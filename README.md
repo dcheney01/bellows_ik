@@ -7,4 +7,4 @@ The package needs to be in the same package as the following packages from the R
     - rad_models
     - rad_msgs
 
-The acutal joint angles are recorded by the vive motion capture system. Pressure control is run on a beaglebone which is set ROS_MASTER. 
+The acutal joint angles are recorded and published by the vive motion capture system. Pressure control is run on a beaglebone which is the ROS_MASTER. 
